@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [          
+        // TODO: This one should call "npm run debug-codegen" but doesn't seem to (no output in the console)
+        // {
+        //     "name": "Debug Template via NPM",
+        //     "type": "node",
+        //     "request": "launch",           
+        //     "runtimeExecutable": "npm",
+        //     "runtimeArgs": [
+        //         "run", "debug-codegen"
+        //     ],
+        //     "port": 5858
+        // },
+        {
+            "name": "Attach to Yellicode template process",
+            "type": "node",
+            "request": "attach",         
+            "port": 5859
+        }
+    ]
+}
