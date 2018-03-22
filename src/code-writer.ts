@@ -69,9 +69,9 @@ export abstract class CodeWriter implements TextWriter {
 
     /**
     * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
-    * @param value The line to write.     
+    * @param value The line to write. When omitted, only the endOfLineString is written.         
     */
-    public writeLine(value: string) {
+    public writeLine(value?: string) {
         this.writer.writeLine(value);
     };
 

@@ -33,9 +33,9 @@ export interface TextWriter {
 
     /**
      * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
-     * @param value The line to write.     
+     * @param value The line to write. When omitted, only the endOfLineString is written.     
      */
-    writeLine(value: string): void;
+    writeLine(value?: string): void;
     
     /**
     * Writes a collection of lines to the output. Each line is indented automatically and ended with the endOfLineString.

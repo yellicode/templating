@@ -41,10 +41,13 @@ export class StreamWriter implements TextWriter {
     ******************************************************************************/
     /**
     * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
-    * @param value The line to write.     
-    */
-    public writeLine(value: string) {
-        this.stream.write(this.createIndentString() + value + this.endOfLineString);
+    * @param value The line to write. When omitted, only the endOfLineString is written.         
+    */    
+    public writeLine(value?: string): void {
+        if (value){
+            this.stream.write(this.createIndentString() + value + this.endOfLineString);
+        }
+        else this.stream.write(this.endOfLineString);
     };
 
     /**
