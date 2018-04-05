@@ -21,29 +21,25 @@ export interface TypeNameProvider {
 
 /**
  * Default implementation of the TypeNameProvider interface. This implementation 
- * returns type names as-is but allows inheritors to map primitive types 
+ * returns type names as-is but allows inheritors to map data types 
  * and other types separately.
  */
 export class DefaultTypeNameProvider implements TypeNameProvider {
     public getTypeName(type: model.Type): string | null {
-        if (model.isPrimitiveType(type)) {
-            return this.getPrimitiveTypeName(type);
-        }
-        else return this.getComplexTypeName(type);
+        return model.isDataType(type) ? this.getDataTypeName(type): this.getComplexTypeName(type);        
     }
 
     /**
-     * Returns the name of the provided primitive type. Override this function to
-     * map primitive type names (both built-in or types exported from a profile)
-     * to the target language.
+     * Returns the name of the provided data type. Override this function to map primitives and other data types 
+     * (both built-in or types exported from a profile) to the target language.
      * @param type The type information.
      */
-    protected /*virtual*/ getPrimitiveTypeName(type: model.PrimitiveType): string | null {
+    protected /*virtual*/ getDataTypeName(type: model.DataType): string | null {
         return type.name;
     }
 
     /**
-     * Returns the name of the provided complex type (any type that is not a primitive). Override this function to provide
+     * Returns the name of the provided complex type (any type that is not a data). Override this function to provide
      * a custom name for the complex type.
      * @param type The type information.
      */
