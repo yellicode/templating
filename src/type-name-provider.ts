@@ -14,9 +14,9 @@ import * as model from "@yellicode/model";
  */
 export interface TypeNameProvider {
     /**
-     * Gets the name of the type. If the name could not be determined, this function returns null.
+     * Gets the name of the typed element's type. If the name could not be determined, this function returns null.
      */
-    getTypeName(type: model.Type): string | null;
+    getTypeName(typedElement: model.TypedElement): string | null;
 }
 
 /**
@@ -25,8 +25,11 @@ export interface TypeNameProvider {
  * and other types separately.
  */
 export class DefaultTypeNameProvider implements TypeNameProvider {
-    public getTypeName(type: model.Type): string | null {
-        return model.isDataType(type) ? this.getDataTypeName(type): this.getComplexTypeName(type);        
+    public getTypeName(typedElement: model.TypedElement): string | null {
+        if (!typedElement.type) return null;
+        return model.isDataType(typedElement.type) ? 
+            this.getDataTypeName(typedElement) : 
+            this.getComplexTypeName(typedElement);
     }
 
     /**
@@ -34,8 +37,8 @@ export class DefaultTypeNameProvider implements TypeNameProvider {
      * (both built-in or types exported from a profile) to the target language.
      * @param type The type information.
      */
-    protected /*virtual*/ getDataTypeName(type: model.DataType): string | null {
-        return type.name;
+    protected /*virtual*/ getDataTypeName(typedElement: model.TypedElement): string | null {
+        return typedElement.getTypeName();
     }
 
     /**
@@ -43,7 +46,7 @@ export class DefaultTypeNameProvider implements TypeNameProvider {
      * a custom name for the complex type.
      * @param type The type information.
      */
-    protected /*virtual*/ getComplexTypeName(type: model.Type): string | null {
-        return type.name;
+    protected /*virtual*/ getComplexTypeName(typedElement: model.TypedElement): string | null {
+        return typedElement.getTypeName();
     }
 }
