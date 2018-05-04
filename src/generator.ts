@@ -23,7 +23,12 @@ export interface CodeModelOptions<TSource, TTarget> {
     /**
      * Specifies an optional model transform that is applied to the model before it is returned.
      */
-    modelTransform?: ModelTransform<TSource, TTarget>;
+    modelTransform?: ModelTransform<TSource, TTarget>;    
+    /**
+     * When true, no attempt will be made to parse the JSON data as a Yellicode model and the plain JSON
+     * data will be returned.
+     */
+    noParse?: boolean;
 }
 
 /**
@@ -77,7 +82,7 @@ export interface CodeGenerator {
 
 class InternalGenerator implements CodeGenerator {
     public templateArgs: any | null;
-    
+
     constructor() {
         this.templateArgs = InternalGenerator.parseTemplateArgs();
         const startedMessage: IProcessMessage = { cmd: 'processStarted' };
@@ -87,15 +92,15 @@ class InternalGenerator implements CodeGenerator {
     private static parseTemplateArgs(): any | null {
         const args = process.argv;
         for (let index = 0; index < args.length; index++) {
-            const val = args[index];            
+            const val = args[index];
             if (val === '--templateArgs' && args.length > index + 1) {
                 const templateArgsString = args[index + 1];
                 if (templateArgsString.length > 0) {
                     return JSON.parse(templateArgsString);
                 }
             }
-        } 
-        return null;      
+        }
+        return null;
     }
 
     private sendProcessMessage(message: IProcessMessage) {
@@ -154,30 +159,37 @@ class InternalGenerator implements CodeGenerator {
     * Loads the model that was configured in the code generation configuration. 
     */
     public getModel<TSource = model.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
-        const promise = new Promise<TTarget>((resolve, reject) => {
+        const codeModelOptions = options || {};
+        const parseJson: boolean = codeModelOptions.noParse !== true;
+        
+        const promise = new Promise<TTarget>((resolve, reject) => {            
             process.on('message', (m: ISetModelMessage) => {
                 if (m.cmd !== 'setModel') {
                     return;
                 }
 
-                //console.info("Generator: Received model");
                 if (!m.modelData) {
-                    //                    return resolve(null);
                     return reject('The host returned an empty model. Please make sure that a model has been configured for this template.');
                 }
 
-                let model: TSource;
-                // Is this a Yellicode model or a plain JSON model?                
-                if (ModelReader.canRead(m.modelData)) {
-                    const modelReader = new ModelReader();
-                    model = <any>modelReader.read(m.modelData);
+                let model: TSource | null;
+                // Should we parse the model into a Yellicode model?                                
+                if (parseJson && ModelReader.canRead(m.modelData)) {                    
+                    // The modelData will contain a Yellicode document with two main nodes: a 'model' node and an optional 'profiles' node.
+                    // We need to parse the entire document (because profiles must be applied) and then return
+                    // just the model part.
+                    const document = ModelReader.readDocument(m.modelData);
+                    if (document){
+                        model = document.model as any;
+                    }
+                    else model = null;
                 }
-                else model = m.modelData; // the model is another json file                       
+                else model = m.modelData; // return plain JSON
 
-                let targetModel: TTarget;
                 // Apply transforms                
-                if (options && options.modelTransform) {
-                    targetModel = options.modelTransform.transform(model);
+                let targetModel: TTarget;
+                if (model && codeModelOptions.modelTransform) {
+                    targetModel = codeModelOptions.modelTransform.transform(model);
                 }
                 else targetModel = <any>model as TTarget;
                 resolve(targetModel);
