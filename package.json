@@ -1,6 +1,6 @@
 {
   "name": "@yellicode/templating",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Templating package for Yellicode - an extensible code generator.",
   "license": "MPL-2.0",
   "main": "dist/bundles/templating.umd.js",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@yellicode/core": "^0.1.2",
-    "@yellicode/model": "^0.1.7"
+    "@yellicode/model": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^7.0.33",
