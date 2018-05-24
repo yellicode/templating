@@ -8,8 +8,8 @@
 const fs = require('fs');
 const path = require('path');
 import { IProcessMessage, ISetModelMessage } from '@yellicode/core';
-import { ModelReader } from '@yellicode/model';
-import * as model from '@yellicode/model';
+import { ModelReader } from '@yellicode/elements';
+import * as elements from '@yellicode/elements';
 import { StreamWriter } from './stream-writer';
 import { TextWriter } from './text-writer';
 import { RegionMarkerFormatter } from './region-marker-formatter';
@@ -72,12 +72,12 @@ export interface CodeGenerator {
      * Gets the model that is configured for the current template.
      * @param options The model options.
      */
-    getModel<TSource = model.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget>;
+    getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget>;
     /**
      * Executes the specified code generation template with the model that is configured for the current template.
      * @param options The code generation options.
      */
-    generateFromModel<TSourceModel = model.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => void): void;
+    generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => void): void;
 }
 
 class InternalGenerator implements CodeGenerator {
@@ -116,7 +116,7 @@ class InternalGenerator implements CodeGenerator {
     /**
      * Executes the provided template using the model that was configured in the code generation configuration. 
      */
-    public generateFromModel<TSourceModel = model.Model, TTargetModel = TSourceModel>(
+    public generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(
         options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>,
         template: (writer: TextWriter, model: TTargetModel) => void): void {
 
@@ -158,7 +158,7 @@ class InternalGenerator implements CodeGenerator {
     /**
     * Loads the model that was configured in the code generation configuration. 
     */
-    public getModel<TSource = model.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
+    public getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
         const codeModelOptions = options || {};
         const parseJson: boolean = codeModelOptions.noParse !== true;
         

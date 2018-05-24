@@ -5,13 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-import * as model from "@yellicode/model";
+import * as elements from "@yellicode/elements";
 import { ModelTransform } from "./model-transform";
 
 /**
  * Transforms a Model or Package by returning just the Package that matches a specified expression.
  */
-export class PackageFilterTransform<TSource extends model.Package = model.Model> implements ModelTransform<TSource, model.Package> {
+export class PackageFilterTransform<TSource extends elements.Package = elements.Model> implements ModelTransform<TSource, elements.Package> {
     private packageName: string;
     private includeNestedPackages: boolean;
 
@@ -39,11 +39,11 @@ export class PackageFilterTransform<TSource extends model.Package = model.Model>
      * The result will be empty if the package could not be found.
      * @param source The Model or Package to transform. 
      */
-    public transform(source: model.Model | model.Package): model.Package {
+    public transform(source: elements.Model | elements.Package): elements.Package {
         if (!source || !source.packagedElements)
             return source;
 
-        const pack = PackageFilterTransform.findPackageRecursive(source, (pack: model.Package) => {
+        const pack = PackageFilterTransform.findPackageRecursive(source, (pack: elements.Package) => {
             return (pack.name != null) && (pack.name.toLowerCase() === this.packageName);
         });
 
@@ -52,19 +52,19 @@ export class PackageFilterTransform<TSource extends model.Package = model.Model>
 
         // Remove any nested packages if needed
         if (!this.includeNestedPackages && pack.packagedElements != null) {
-            pack.packagedElements = pack.packagedElements.filter(e => !(model.ElementTypeUtility.isPackage(e.elementType)));
+            pack.packagedElements = pack.packagedElements.filter(e => !(elements.ElementTypeUtility.isPackage(e.elementType)));
         }
         return pack;
     }
 
-    private static findPackageRecursive(root: model.Package, predicate: (pack: model.Package) => boolean): model.Package | null {
+    private static findPackageRecursive(root: elements.Package, predicate: (pack: elements.Package) => boolean): elements.Package | null {
         if (predicate(root)) return root;
         if (root.packagedElements == null) return null;
         // We use a for loop so that we can easily return when we 
         for (var i = 0, len = root.packagedElements.length; i < len; i++) {
             const packagedElement = root.packagedElements[i];
-            if (packagedElement.elementType === model.ElementType.package) {
-                const childResult = PackageFilterTransform.findPackageRecursive(packagedElement as model.Package, predicate);
+            if (packagedElement.elementType === elements.ElementType.package) {
+                const childResult = PackageFilterTransform.findPackageRecursive(packagedElement as elements.Package, predicate);
                 if (childResult != null) return childResult;
             }
         }

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-import * as model from "@yellicode/model";
+import * as elements from "@yellicode/elements";
 
 /**
  * Defines the interface for classes that create type names for types in a model.
@@ -16,7 +16,7 @@ export interface TypeNameProvider {
     /**
      * Gets the name of the typed element's type. If the name could not be determined, this function returns null.
      */
-    getTypeName(typedElement: model.TypedElement): string | null;
+    getTypeName(typedElement: elements.TypedElement): string | null;
 }
 
 /**
@@ -25,9 +25,9 @@ export interface TypeNameProvider {
  * and other types separately.
  */
 export class DefaultTypeNameProvider implements TypeNameProvider {
-    public getTypeName(typedElement: model.TypedElement): string | null {
+    public getTypeName(typedElement: elements.TypedElement): string | null {
         if (!typedElement.type) return null;
-        return model.isDataType(typedElement.type) ? 
+        return elements.isDataType(typedElement.type) ? 
             this.getDataTypeName(typedElement) : 
             this.getComplexTypeName(typedElement);
     }
@@ -37,7 +37,7 @@ export class DefaultTypeNameProvider implements TypeNameProvider {
      * (both built-in or types exported from a profile) to the target language.
      * @param type The type information.
      */
-    protected /*virtual*/ getDataTypeName(typedElement: model.TypedElement): string | null {
+    protected /*virtual*/ getDataTypeName(typedElement: elements.TypedElement): string | null {
         return typedElement.getTypeName();
     }
 
@@ -46,7 +46,7 @@ export class DefaultTypeNameProvider implements TypeNameProvider {
      * a custom name for the complex type.
      * @param type The type information.
      */
-    protected /*virtual*/ getComplexTypeName(typedElement: model.TypedElement): string | null {
+    protected /*virtual*/ getComplexTypeName(typedElement: elements.TypedElement): string | null {
         return typedElement.getTypeName();
     }
 }

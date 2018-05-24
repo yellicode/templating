@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-import * as model from "@yellicode/model";
+import * as elements from "@yellicode/elements";
 import { PackagedElementTransform } from "./packaged-element-transform";
 import { NameUtility } from "../name-utility";
 
@@ -77,20 +77,20 @@ export abstract class RenamingTransform extends PackagedElementTransform {
         else return false;
     }
 
-    protected transformElement(element: model.PackageableElement) {
-        if (!model.ElementTypeUtility.isMemberedClassifier(element.elementType))
+    protected transformElement(element: elements.PackageableElement) {
+        if (!elements.ElementTypeUtility.isMemberedClassifier(element.elementType))
             return;
 
-        if (this.hasTarget(RenameTargets.classes) && model.ElementTypeUtility.isClass(element.elementType)) {
+        if (this.hasTarget(RenameTargets.classes) && elements.ElementTypeUtility.isClass(element.elementType)) {
             element.name = this.rename(element.name, element);
         }
 
-        if (this.hasTarget(RenameTargets.interfaces) && model.ElementTypeUtility.isInterface(element.elementType)) {
+        if (this.hasTarget(RenameTargets.interfaces) && elements.ElementTypeUtility.isInterface(element.elementType)) {
             element.name = this.rename(element.name, element);
         }
 
         // The element has OwnedAttributes and OwnedOperations
-        var classifier = element as model.MemberedClassifier;
+        var classifier = element as elements.MemberedClassifier;
         if (classifier.ownedAttributes != null && this.hasTarget(RenameTargets.properties)) {
             classifier.ownedAttributes.forEach(att => {
                 att.name = this.rename(att.name, att);
@@ -110,8 +110,8 @@ export abstract class RenamingTransform extends PackagedElementTransform {
             });
         }
 
-        if (model.ElementTypeUtility.isEnumeration(element.elementType)) {
-            var enumeration = <model.Enumeration>element;
+        if (elements.ElementTypeUtility.isEnumeration(element.elementType)) {
+            var enumeration = <elements.Enumeration>element;
             if (this.hasTarget(RenameTargets.enumerations)) {
                 enumeration.name = this.rename(enumeration.name, enumeration);
             }
@@ -123,7 +123,7 @@ export abstract class RenamingTransform extends PackagedElementTransform {
         }
     }
 
-    protected abstract rename(name: string, target: model.Element): string;
+    protected abstract rename(name: string, target: elements.Element): string;
 }
 
 /**
@@ -139,7 +139,7 @@ export class CapitalizingTransform extends RenamingTransform {
         super(targets);
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return NameUtility.capitalize(name);
     }
 }
@@ -157,7 +157,7 @@ export class UnCapitalizingTransform extends RenamingTransform {
         super(targets);
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return NameUtility.unCapitalize(name);
     }
 }
@@ -174,7 +174,7 @@ export class UpperToLowerCamelCaseTransform extends RenamingTransform {
         super(targets);
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return NameUtility.upperToLowerCamelCase(name);
     }
 }
@@ -191,7 +191,7 @@ export class LowerToUpperCamelCaseTransform extends RenamingTransform {
         super(targets);
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return NameUtility.lowerToUpperCamelCase(name);
     }
 }
@@ -211,7 +211,7 @@ export class PrefixingTransform extends RenamingTransform {
         this.prefix = prefix;
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return this.prefix + name;
     }
 }
@@ -231,7 +231,7 @@ export class SuffixingTransform extends RenamingTransform {
         this.suffix = suffix;
     }
 
-    protected rename(name: string, target: model.Element): string {
+    protected rename(name: string, target: elements.Element): string {
         return name + this.suffix;
     }
 }
