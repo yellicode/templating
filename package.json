@@ -2,6 +2,12 @@
   "name": "@yellicode/templating",
   "version": "0.3.2",
   "description": "Templating package for Yellicode - an extensible code generator.",
+  "keywords": [
+    "code generator",
+    "code generation",
+    "typescript",
+    "templating API"
+  ],
   "license": "MPL-2.0",
   "main": "dist/bundles/templating.umd.js",
   "module": "dist/es5/templating.js",

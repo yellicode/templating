@@ -5,8 +5,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-const fs = require('fs');
-const path = require('path');
+
+import * as path from 'path';
+import * as fs from 'fs';
 import { IProcessMessage, ISetModelMessage } from '@yellicode/core';
 import { ModelReader } from '@yellicode/elements';
 import * as elements from '@yellicode/elements';
@@ -23,7 +24,7 @@ export interface CodeModelOptions<TSource, TTarget> {
     /**
      * Specifies an optional model transform that is applied to the model before it is returned.
      */
-    modelTransform?: ModelTransform<TSource, TTarget>;    
+    modelTransform?: ModelTransform<TSource, TTarget>;
     /**
      * When true, no attempt will be made to parse the JSON data as a Yellicode model and the plain JSON
      * data will be returned.
@@ -39,6 +40,12 @@ export interface CodeGenerationOptions {
      * The path of the output file, relative to the template file.
      */
     outputFile: string;
+    /**
+     * Indicates what to do if the output file already exists. By default, the output file will be overwritten,
+     * unless a diffent mode is configured in the 'outputMode' setting for this template in the codegenconfig.json. 
+     * If outputMode has a value, the template configuration will be ignored. 
+     */
+    outputMode?: OutputMode;
     /**
      * Provides an optional RegionMarkerFormatter that provides region start- and end markers based on a region name.
      * Region markers must be used in files that must to be merged with generated code.
@@ -80,27 +87,73 @@ export interface CodeGenerator {
     generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => void): void;
 }
 
+export enum OutputMode {
+    /**
+     * The output file will be truncated if it exists. This is the default value. 
+     */
+    Overwrite,
+    /**
+     * The output file will not be truncated if it already exists. Use this option if you want 
+     * to updat the file manually once it is generated.
+     */
+    Once,
+    /**
+     * The template output will be appended to the file if it already exists. The file is created if it 
+     * does not exist.
+     */
+    Append
+}
+
 class InternalGenerator implements CodeGenerator {
-    public templateArgs: any | null;
+    public templateArgs!: any | null;
+    private outputMode: OutputMode = OutputMode.Overwrite;
 
     constructor() {
-        this.templateArgs = InternalGenerator.parseTemplateArgs();
+        //this.templateArgs = InternalGenerator.parseTemplateArgs(process.argv);
+        this.parseProcessArgs(process.argv);
         const startedMessage: IProcessMessage = { cmd: 'processStarted' };
         this.sendProcessMessage(startedMessage);
     }
 
-    private static parseTemplateArgs(): any | null {
-        const args = process.argv;
+    private parseProcessArgs(args: string[]): void {
         for (let index = 0; index < args.length; index++) {
             const val = args[index];
-            if (val === '--templateArgs' && args.length > index + 1) {
-                const templateArgsString = args[index + 1];
-                if (templateArgsString.length > 0) {
-                    return JSON.parse(templateArgsString);
-                }
+            if (val === '--templateArgs') {
+                this.templateArgs = InternalGenerator.parseTemplateArgs(args, index);
+            }
+            else if (val === '--outputMode') {
+                this.outputMode = InternalGenerator.parseOutputMode(args, index) || this.outputMode;
             }
         }
+    }
+
+    private static parseOutputMode(args: string[], index: number): OutputMode | null {
+        if (args.length <= index + 1)
+            return null;
+
+        const outputModeString = args[index + 1];
+        switch (outputModeString) {
+            case 'append':
+                return OutputMode.Append;
+            case 'once':
+                return OutputMode.Once;
+            case 'overwrite':
+                return OutputMode.Overwrite;
+            default:
+                return null;
+        }       
+    }
+
+    private static parseTemplateArgs(args: string[], index: number): any | null {
+        if (args.length <= index + 1)
+            return null;
+
+        const templateArgsString = args[index + 1];
+        if (templateArgsString.length > 0) {
+            return JSON.parse(templateArgsString);
+        }
         return null;
+
     }
 
     private sendProcessMessage(message: IProcessMessage) {
@@ -140,10 +193,18 @@ class InternalGenerator implements CodeGenerator {
 
         // Let the host know that we started something so that we don't get killed
         var startedMessage: IProcessMessage = { cmd: 'generateStarted' };
-        this.sendProcessMessage(startedMessage);
+        this.sendProcessMessage(startedMessage);        
         // console.log('Generator: Generating file \'%s\'...', fullOutputFileName);
+        const mode = options.outputMode === undefined ? this.outputMode : options.outputMode;       
+        if (mode === OutputMode.Once && fs.existsSync(fullOutputFileName)) {
+            // Don't regenerate the file
+            var finishedMessage: IProcessMessage = { cmd: 'generateFinished' };
+            this.sendProcessMessage(finishedMessage);
+            return;
+        }
 
-        const writeStream = fs.createWriteStream(fullOutputFileName);
+        const flags:string = mode === OutputMode.Append ? 'a': 'w';
+        const writeStream = fs.createWriteStream(fullOutputFileName, {flags: flags});
         writeStream.once('open', (fd: number) => {
             var cw = new StreamWriter(writeStream, options.regionMarkerFormatter);
             callback(cw);
@@ -161,8 +222,8 @@ class InternalGenerator implements CodeGenerator {
     public getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
         const codeModelOptions = options || {};
         const parseJson: boolean = codeModelOptions.noParse !== true;
-        
-        const promise = new Promise<TTarget>((resolve, reject) => {            
+
+        const promise = new Promise<TTarget>((resolve, reject) => {
             process.on('message', (m: ISetModelMessage) => {
                 if (m.cmd !== 'setModel') {
                     return;
@@ -174,12 +235,12 @@ class InternalGenerator implements CodeGenerator {
 
                 let model: TSource | null;
                 // Should we parse the model into a Yellicode model?                                
-                if (parseJson && ModelReader.canRead(m.modelData)) {                    
+                if (parseJson && ModelReader.canRead(m.modelData)) {
                     // The modelData will contain a Yellicode document with two main nodes: a 'model' node and an optional 'profiles' node.
                     // We need to parse the entire document (because profiles must be applied) and then return
                     // just the model part.
                     const document = ModelReader.readDocument(m.modelData);
-                    if (document){
+                    if (document) {
                         model = document.model as any;
                     }
                     else model = null;

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-export { Generator, CodeGenerator, CodeGenerationOptions } from './generator';
+export { Generator, CodeGenerator, CodeGenerationOptions, OutputMode } from './generator';
 export { CodeWriter } from "./code-writer";
 export { TextWriter } from "./text-writer";
 export { RegionMarkerFormatter } from "./region-marker-formatter";
