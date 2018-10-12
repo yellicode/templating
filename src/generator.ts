@@ -94,7 +94,7 @@ export enum OutputMode {
     Overwrite,
     /**
      * The output file will not be truncated if it already exists. Use this option if you want 
-     * to updat the file manually once it is generated.
+     * to update the file manually once it is generated.
      */
     Once,
     /**
