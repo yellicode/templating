@@ -73,8 +73,16 @@ export interface CodeGenerator {
     /**
      * Executes the specified code generation template without any model.
      * @param options The code generation options.
+     * @param template A callback function that writes code to the provided TextWriter.
      */
     generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void;
+    /**
+     * Executes the specified code generation template without any model. 
+     * @param options The code generation options.
+     * @param template A callback function that writes code to the provided TextWriter. This callback should
+     * return a Promise<void> when writing has finished.
+     */
+    generateAsync(options: CodeGenerationOptions, template: (writer: TextWriter) => Promise<void>): void;
     /**
      * Gets the model that is configured for the current template.
      * @param options The model options.
@@ -85,6 +93,13 @@ export interface CodeGenerator {
      * @param options The code generation options.
      */
     generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => void): void;
+    /**
+     * Executes the specified code generation template with the model that is configured for the current template.
+     * @param options The code generation options.
+     * @param template A callback function that writes code to the provided TextWriter. This callback should
+     * return a Promise<void> when writing has finished. 
+     */
+    generateFromModelAsync<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => Promise<void>): void;
 }
 
 export enum OutputMode {
@@ -159,10 +174,15 @@ class InternalGenerator implements CodeGenerator {
     private sendProcessMessage(message: IProcessMessage) {
         (process as any).send(message); // https://github.com/Microsoft/TypeScript/issues/10158        
     }
-    /**
-       * Executes the provided template.
-       */
-    public generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void {
+
+    public generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void {        
+        this.generateInternal(options, (writer: TextWriter) => {
+            template(writer);
+            return Promise.resolve();
+        });
+    }
+
+    public generateAsync(options: CodeGenerationOptions, template: (writer: TextWriter) => Promise<void>): void {
         this.generateInternal(options, template);
     }
 
@@ -177,13 +197,28 @@ class InternalGenerator implements CodeGenerator {
             .then((model) => {
                 this.generateInternal(options, (writer: TextWriter) => {
                     template(writer, model);
+                    return Promise.resolve();
                 });
             }).catch((err) => {
                 console.log(err);
             });
     }
 
-    private generateInternal<TModel>(options: CodeGenerationOptions, callback: (writer: TextWriter) => void): void {
+    public generateFromModelAsync<TSourceModel = elements.Model, TTargetModel = TSourceModel>(
+        options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>,
+        template: (writer: TextWriter, model: TTargetModel) => Promise<void>): void {
+
+        this.getModel(options)
+            .then((model) => {
+                this.generateInternal(options, (writer: TextWriter) => {
+                    return template(writer, model);
+                });
+            }).catch((err) => {
+                console.log(err);
+            });
+    }
+
+    private generateInternal<TModel>(options: CodeGenerationOptions, callback: (writer: TextWriter) => Promise<void>): void {
         // Get the working directory. The host will make sure that this is the directory in which the template resides.
         const templateDirName = path.resolve('./');
         // console.log('Generator: Template directory name is \'%s\'', templateDirName);
@@ -207,12 +242,14 @@ class InternalGenerator implements CodeGenerator {
         const writeStream = fs.createWriteStream(fullOutputFileName, {flags: flags});
         writeStream.once('open', (fd: number) => {
             var cw = new StreamWriter(writeStream, options.regionMarkerFormatter);
-            callback(cw);
-            writeStream.end();
-            // console.log('Generator: Finished generating \'%s\'...', fullOutputFileName);
-            // Let the host know that we are done
-            var finishedMessage: IProcessMessage = { cmd: 'generateFinished' };
-            this.sendProcessMessage(finishedMessage);
+            callback(cw)
+                .then(() => {
+                    writeStream.end();
+                    // console.log('Generator: Finished generating \'%s\'...', fullOutputFileName);
+                    // Let the host know that we are done
+                    var finishedMessage: IProcessMessage = { cmd: 'generateFinished' };
+                    this.sendProcessMessage(finishedMessage);
+                });
         });
     }
 
