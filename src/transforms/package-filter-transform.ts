@@ -10,6 +10,7 @@ import { ModelTransform } from "./model-transform";
 
 /**
  * Transforms a Model or Package by returning just the Package that matches a specified expression.
+ * @deprecated PackageFilterTransform has moved to the 'yellicode/elements' package, please update your references. 
  */
 export class PackageFilterTransform<TSource extends elements.Package = elements.Model> implements ModelTransform<TSource, elements.Package> {
     private packageName: string;
@@ -21,6 +22,7 @@ export class PackageFilterTransform<TSource extends elements.Package = elements.
      * packages will be included. The expression is case-insensitive.
      */
     constructor(expression: string) {
+        console.warn(`PackageFilterTransform has moved to the 'yellicode/elements' package, please update your references.`);
         if (!expression) {
             throw `Unable to filter packages. The filter expression cannot be empty.`;
         }

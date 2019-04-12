@@ -11,13 +11,19 @@ import { ModelTransform } from "./model-transform";
 /**
  * A base class for transforms that need to be applied recursively to all nested packaged elements 
  * in a model or package.
+ * @deprecated PackagedElementTransform has moved to the 'yellicode/elements' package, please update your references. 
  */
 export abstract class PackagedElementTransform<TSource extends elements.Package = elements.Model> implements ModelTransform<TSource, elements.Package> {
+    constructor() {
+        console.warn(`PackagedElementTransform has moved to the 'yellicode/elements' package, please update your references.`);
+    }
+    
     /**
      * Transforms the package and returns the transformation result.
      * @param pack The package or model to transform.
      */
     public transform(pack: TSource): elements.Package {
+
         if (pack == null)
             return pack;
 

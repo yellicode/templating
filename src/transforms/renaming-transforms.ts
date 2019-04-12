@@ -59,6 +59,7 @@ export enum RenameTargets {
 
 /**
  * A base class for renaming classes, interfaces, properties, operations parameters, enumerations and enumeration literals.
+ * @deprecated RenamingTransform has moved to the 'yellicode/elements' package, please update your references. 
  */
 export abstract class RenamingTransform extends PackagedElementTransform {
     private targets: RenameTargets;
@@ -68,6 +69,7 @@ export abstract class RenamingTransform extends PackagedElementTransform {
      * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
      */
     constructor(targets?: RenameTargets) {
+        console.warn(`RenamingTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super();
         this.targets = targets == null ? RenameTargets.all : targets;
     }
@@ -129,6 +131,7 @@ export abstract class RenamingTransform extends PackagedElementTransform {
 /**
  * A transform that capitalizes its rename targets, that is, makes the
  * first character uppercase.
+ * @deprecated CapitalizingTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class CapitalizingTransform extends RenamingTransform {
     /**
@@ -136,6 +139,7 @@ export class CapitalizingTransform extends RenamingTransform {
      * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
      */
     constructor(targets?: RenameTargets) {
+        console.warn(`CapitalizingTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
     }
 
@@ -147,6 +151,7 @@ export class CapitalizingTransform extends RenamingTransform {
 /**
  * A transform that uncapitalizes its rename targets, that is, makes the
  * first character lowercase.
+ * @deprecated UnCapitalizingTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class UnCapitalizingTransform extends RenamingTransform {
     /**
@@ -154,6 +159,7 @@ export class UnCapitalizingTransform extends RenamingTransform {
      * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
      */
     constructor(targets?: RenameTargets) {
+        console.warn(`UnCapitalizingTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
     }
 
@@ -164,6 +170,7 @@ export class UnCapitalizingTransform extends RenamingTransform {
 
 /**
  * A transform that converts its rename targets from UpperCamelCase to lowerCamelCase.
+ *  @deprecated UpperToLowerCamelCaseTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class UpperToLowerCamelCaseTransform extends RenamingTransform {
     /**
@@ -171,6 +178,7 @@ export class UpperToLowerCamelCaseTransform extends RenamingTransform {
        * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
        */
     constructor(targets?: RenameTargets) {
+        console.warn(`UpperToLowerCamelCaseTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
     }
 
@@ -181,6 +189,7 @@ export class UpperToLowerCamelCaseTransform extends RenamingTransform {
 
 /**
  * A transform that converts its rename targets from lowerCamelCase to UpperCamelCase.
+ * @deprecated LowerToUpperCamelCaseTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class LowerToUpperCamelCaseTransform extends RenamingTransform {
     /**
@@ -188,6 +197,7 @@ export class LowerToUpperCamelCaseTransform extends RenamingTransform {
        * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
        */
     constructor(targets?: RenameTargets) {
+        console.warn(`LowerToUpperCamelCaseTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
     }
 
@@ -198,6 +208,7 @@ export class LowerToUpperCamelCaseTransform extends RenamingTransform {
 
 /**
  * A transform that adds a prefix to its rename targets.
+ * @deprecated PrefixingTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class PrefixingTransform extends RenamingTransform {
     private prefix: string;
@@ -207,6 +218,7 @@ export class PrefixingTransform extends RenamingTransform {
     * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
     */
     constructor(targets: RenameTargets, prefix: string) {
+        console.warn(`PrefixingTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
         this.prefix = prefix;
     }
@@ -218,6 +230,7 @@ export class PrefixingTransform extends RenamingTransform {
 
 /**
  * A transform that adds a suffix to its rename targets.
+ * @deprecated SuffixingTransform has moved to the 'yellicode/elements' package, please update your references.
  */
 export class SuffixingTransform extends RenamingTransform {
     private suffix: string;
@@ -227,6 +240,7 @@ export class SuffixingTransform extends RenamingTransform {
     * @param targets Optional: indicates which elements to rename. The default is RenameTargets.all.
     */
     constructor(targets: RenameTargets, suffix: string) {
+        console.warn(`SuffixingTransform has moved to the 'yellicode/elements' package, please update your references.`);
         super(targets);
         this.suffix = suffix;
     }
