@@ -111,7 +111,7 @@ export class NameUtility {
      * @param input A kebab-case (aka dash-case), lowerCamelCase or UpperCamelCase string.
      * @returns an ALL_UPPER_CASE string.
      */
-    public static stringToAllUpperCase(input: string): string {
+    public static toAllUpperCase(input: string): string {
         if (!input) return input;
 
         const result: string[] = [];
