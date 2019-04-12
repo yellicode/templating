@@ -8,6 +8,7 @@
 
 /**
  * The base interface for all model transformations.
+ * @deprecated ModelTransform has moved to the 'yellicode/core' package, please update your references. 
  */
 export interface ModelTransform<TSource, TTarget = TSource> {
     /**
@@ -19,6 +20,7 @@ export interface ModelTransform<TSource, TTarget = TSource> {
 /**
  * Performs a sequence of model transforms, where the output of each transform is
  * the input of the next transform.
+ * @deprecated ModelTransformPipeline has moved to the 'yellicode/core' package, please update your references. 
  */
 export class ModelTransformPipeline<TModel = any> implements ModelTransform<TModel> {
     private transforms: ModelTransform<TModel>[];
@@ -28,6 +30,7 @@ export class ModelTransformPipeline<TModel = any> implements ModelTransform<TMod
      * @param transform sAny transforms to initialize the pipeline with.
      */
     constructor(...transforms: ModelTransform<TModel>[]) {
+        console.warn(`ModelTransformPipeline has moved to the '@yellicode/core' package, please update your references.`);
         this.transforms = transforms || [];
     }
 

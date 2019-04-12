@@ -13,17 +13,20 @@ import { StringUtility } from '@yellicode/core';
 export class NameUtility {
     /**
     * Makes the first character of the string uppercase.     
+    * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
     */
     public static capitalize(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         if (!input) return input;
         return StringUtility.capitalize(input);
-
     }
 
     /**
      * Makes the first character of the string lowercase.     
+     * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
      */
     public static unCapitalize(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         if (!input) return input;
         return StringUtility.unCapitalize(input);
     }
@@ -32,8 +35,10 @@ export class NameUtility {
      * Converts a UpperCamelCase or lowerCamelCase string to a kebab-case (aka dash-case) string.
      * @param input A camelCase or UpperCamelCase string.
      * @returns a kebab-case (aka dash-case) string, meaning all lowercase with a dash separating words.
+     * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
      */
     public static camelToKebabCase(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         if (!input) return input;
 
         const result: string[] = [];
@@ -63,8 +68,10 @@ export class NameUtility {
      * Converts a UpperCamelCase string to a lowerCamelCase string.
      * @param input A UpperCamelCase string.
      * @returns a lowerCamelCase string.
+     * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
      */
     public static upperToLowerCamelCase(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         if (!input) return input;
 
         let done = false;
@@ -101,8 +108,10 @@ export class NameUtility {
    * Converts a lowerCamelCase string to a UpperCamelCase string.
    * @param input A lowerCamelCase string.
    * @returns a UpperCamelCase string.
+   * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
    */
     public static lowerToUpperCamelCase(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         return StringUtility.capitalize(input);
     }
 
@@ -110,8 +119,10 @@ export class NameUtility {
      * Converts a kebab-case, lowerCamelCase or UpperCamelCase string to an ALL_UPPER_CASE string.
      * @param input A kebab-case (aka dash-case), lowerCamelCase or UpperCamelCase string.
      * @returns an ALL_UPPER_CASE string.
+     * @deprecated NameUtility has moved to the 'yellicode/core' package, please update your references. 
      */
     public static toAllUpperCase(input: string): string {
+        console.warn(`NameUtility has moved to the '@yellicode/core' package, please update your references.`);
         if (!input) return input;
 
         const result: string[] = [];
