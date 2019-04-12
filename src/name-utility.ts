@@ -105,4 +105,36 @@ export class NameUtility {
     public static lowerToUpperCamelCase(input: string): string {
         return StringUtility.capitalize(input);
     }
+
+    /**
+     * Converts a kebab-case, lowerCamelCase or UpperCamelCase string to an ALL_UPPER_CASE string.
+     * @param input A kebab-case (aka dash-case), lowerCamelCase or UpperCamelCase string.
+     * @returns an ALL_UPPER_CASE string.
+     */
+    public static stringToAllUpperCase(input: string): string {
+        if (!input) return input;
+
+        const result: string[] = [];
+
+        for (var i = 0, len = input.length; i < len; i++) {
+            var c = input.charAt(i);
+            const upperCase = c.toUpperCase();
+            const lowerCase = c.toLowerCase();
+            const isUpperCase = (c === upperCase && c !== lowerCase);
+            const isDash = c === '-';
+            if ((isDash || isUpperCase) && i > 0 && i < len - 1) {
+                let insertHyphen = true;
+                if (i < len - 1 && StringUtility.isUpperCase(input.charAt(i + 1))) {
+                    // The next character is also uppercase
+                    insertHyphen = false;
+                }
+                if (insertHyphen) {
+                    result.push('_');
+                }
+            }
+            if (!isDash)
+                result.push(upperCase);
+        }
+        return result.join('');
+    }
 }
