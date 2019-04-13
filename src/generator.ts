@@ -8,14 +8,13 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { IProcessMessage, ISetModelMessage } from '@yellicode/core';
+import { IProcessMessage, ISetModelMessage, ModelTransform } from '@yellicode/core';
 import { ModelReader } from '@yellicode/elements';
 import * as elements from '@yellicode/elements';
 import { StreamWriter } from './stream-writer';
 import { TextWriter } from './text-writer';
 import { RegionMarkerFormatter } from './region-marker-formatter';
 import { FileSystemUtility } from './file-system-utility';
-import { ModelTransform } from "./transforms/model-transform";
 
 /**
  * Defines the options for retrieving a model to be used as input for code generation.
