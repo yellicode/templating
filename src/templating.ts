@@ -12,6 +12,8 @@ export { RegionMarkerFormatter } from "./region-marker-formatter";
 export { CodeWriterUtility } from './code-writer-utility';
 export { NameUtility } from './name-utility';
 export * from './type-name-provider';
+
+// Deprecated, moved to @yellicode/core and @yellicode/elements
 export * from "./transforms/model-transform";
 export * from "./transforms/packaged-element-transform";
 export * from "./transforms/package-filter-transform";

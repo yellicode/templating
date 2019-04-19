@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@yellicode/core": "^1.1.0",
-    "@yellicode/elements": "^1.0.2"
+    "@yellicode/elements": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^10.11.7",
