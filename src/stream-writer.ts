@@ -43,11 +43,12 @@ export class StreamWriter implements TextWriter {
     * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
     * @param value The line to write. When omitted, only the endOfLineString is written.         
     */    
-    public writeLine(value?: string): void {
+    public writeLine(value?: string): this {
         if (value){
             this.stream.write(this.createIndentString() + value + this.endOfLineString);
         }
         else this.stream.write(this.endOfLineString);
+        return this;
     };
 
     /**
@@ -55,8 +56,8 @@ export class StreamWriter implements TextWriter {
     * @param values The lines to write.   
     * @param delimiter An optional delimiter to be written at the end of each line, except for the last one.
     */
-    public writeLines(values: string[], delimiter?: string): void {
-        if (!values) return;
+    public writeLines(values: string[], delimiter?: string): this {
+        if (!values) return this;
 
         const len = values.length;
         values.forEach((value, index) => {
@@ -66,57 +67,67 @@ export class StreamWriter implements TextWriter {
             }
             this.stream.write(this.endOfLineString);
         });
+        return this;
     }
 
     /**
      * Writes a new line to the output while temporarily increasing the indent. The line is ended with the endOfLineString.
      * @param value The line to write.     
      */
-    public writeLineIndented(value: string): void {
+    public writeLineIndented(value: string): this {
         this.stream.write(this.indentString + this.createIndentString() + value + this.endOfLineString);
+        return this;
     }
 
-    public writeEndOfLine(value?: string) {
+    public writeEndOfLine(value?: string): this {
         if (value) {
             this.stream.write(value);
         }
         this.stream.write(this.endOfLineString);
+        return this;
     }
 
-    public writeIndent() {
+    public writeIndent(): this {
         this.stream.write(this.createIndentString());
+        return this;
     };
 
-    public write(value: string) {
-        if (value == null) return; // avoid 'May not write null values to stream'
+    public write(value: string): this {
+        if (value == null) return this; // avoid 'May not write null values to stream'
         this.stream.write(value);
+        return this;
     };
 
-    public writeWhiteSpace(): void {
+    public writeWhiteSpace(): this {
         this.write(" ");
+        return this;
     }
 
-    public increaseIndent() {
+    public increaseIndent(): this {
         this.indent++;
+        return this;
     }
 
-    public decreaseIndent() {
+    public decreaseIndent() : this{
         if (this.indent > 0) {
             this.indent--;
         }
+        return this;
     }
 
-    public clearIndent() {
+    public clearIndent(): this {
         this.indent = 0;
+        return this;
     }
 
-    public writeFile(path: string, encoding?: string) {
+    public writeFile(path: string, encoding?: string): this {
         const fullPath = this.resolveFileName(path);
         const contents = this.readTextFile(fullPath, false, encoding);
         if (contents == null || contents.length <= 0)
-            return;
+            return this;
 
         this.stream.write(contents);
+        return this;
     }
 
     public writeFileRegion(regionName: string, path: string, encoding?: string): boolean {

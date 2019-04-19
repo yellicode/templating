@@ -56,23 +56,26 @@ export abstract class CodeWriter implements TextWriter {
      * Writes a string value to the output.
      * @param value The string value to be written.     
      */
-    public write(value: string) {
+    public write(value: string): this {
         this.writer.write(value);
+        return this;
     };
 
     /**
     * Writes a single whitespace character to the output.     
     */
-    public writeWhiteSpace() {
+    public writeWhiteSpace(): this {
         this.writer.writeWhiteSpace();
+        return this;
     }
 
     /**
     * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
     * @param value The line to write. When omitted, only the endOfLineString is written.         
     */
-    public writeLine(value?: string) {
+    public writeLine(value?: string): this {
         this.writer.writeLine(value);
+        return this;
     };
 
     /**
@@ -80,24 +83,27 @@ export abstract class CodeWriter implements TextWriter {
    * @param values The lines to write.   
    * @param delimiter An optional delimiter to be written at the end of each line, except for the last one.
    */
-    public writeLines(values: string[], delimiter?: string): void {
+    public writeLines(values: string[], delimiter?: string): this {
         this.writer.writeLines(values, delimiter);
+        return this;
     }
 
     /**
      * Writes a new line to the output while temporarily increasing the indent. The line is ended with the endOfLineString.
      * @param value The line to write.     
      */
-    public writeLineIndented(value: string): void {
+    public writeLineIndented(value: string): this {
         this.writer.writeLineIndented(value);
+        return this;
     }
 
     /**
      * Writes the endOfLineString to the output.
      * @param value Any value to write before the endOfLineString string is written.
      */
-    public writeEndOfLine(value?: string) {
+    public writeEndOfLine(value?: string): this {
         this.writer.writeEndOfLine(value);
+        return this;
     };
 
     /**
@@ -105,8 +111,9 @@ export abstract class CodeWriter implements TextWriter {
       * @param fileName The path of the file, relative to the template.
       * @param encoding Optional: the encoding that is used for the file. The default is 'utf-8'.     
       */
-    public writeFile(path: string, encoding?: string) {
+    public writeFile(path: string, encoding?: string): this {
         this.writer.writeFile(path, encoding);
+        return this;
     }
 
     /**
@@ -122,29 +129,33 @@ export abstract class CodeWriter implements TextWriter {
     /**
     * Writes the current indentString to the output.     
     */
-    public writeIndent() {
+    public writeIndent(): this {
         this.writer.writeIndent();
+        return this;
     };
 
     /**
     * Increases the current indent, which is prefixed to each line of the output. 
     */
-    public increaseIndent() {
+    public increaseIndent(): this {
         this.writer.increaseIndent();
+        return this;
     }
 
     /**
     * Decreases the current indent, which is prefixed to each line of the output.
     */
-    public decreaseIndent() {
+    public decreaseIndent(): this {
         this.writer.decreaseIndent();
+        return this;
     }
 
     /**
      * Resets any indentation, causing new line writes to start at the first character position.
      */
-    public clearIndent() {
+    public clearIndent(): this {
         this.writer.clearIndent();
+        return this;
     }
 
     /******************************************************************************
