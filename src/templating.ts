@@ -5,12 +5,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-export { Generator, CodeGenerator, CodeGenerationOptions, OutputMode } from './generator';
+export { CodeGenerationOptions, OutputMode } from './options';
+export { Generator } from './internal-generator';
+export { CodeGenerator } from './code-generator';
 export { CodeWriter } from "./code-writer";
 export { TextWriter } from "./text-writer";
 export { RegionMarkerFormatter } from "./region-marker-formatter";
 export { CodeWriterUtility } from './code-writer-utility';
-export { NameUtility } from './name-utility';
+export { NameUtility } from './name-utility'; // deprecated, moved to @yellicode/core
 export * from './type-name-provider';
 
 // Deprecated, moved to @yellicode/core and @yellicode/elements

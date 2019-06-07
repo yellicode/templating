@@ -8,140 +8,28 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
-import { IProcessMessage, ISetModelMessage, ModelTransform, Logger, ConsoleLogger } from '@yellicode/core';
+import { IProcessMessage, ISetModelMessage, Logger } from '@yellicode/core';
 import { ModelReader } from '@yellicode/elements';
 import * as elements from '@yellicode/elements';
 import { StreamWriter } from './stream-writer';
 import { TextWriter } from './text-writer';
-import { RegionMarkerFormatter } from './region-marker-formatter';
 import { FileSystemUtility } from './file-system-utility';
-
-/**
- * Defines the options for retrieving a model to be used as input for code generation.
- */
-export interface CodeModelOptions<TSource, TTarget> {
-    /**
-     * Specifies an optional model transform that is applied to the model before it is returned.
-     */
-    modelTransform?: ModelTransform<TSource, TTarget>;
-    /**
-     * When true, no attempt will be made to parse the JSON data as a Yellicode model and the plain JSON
-     * data will be returned.
-     */
-    noParse?: boolean;
-}
-
-/**
- * Defines the options for generating a code file with the CodeGenerator.
- */
-export interface CodeGenerationOptions {
-    /**
-     * The path of the output file, relative to the template file.
-     */
-    outputFile: string;
-    /**
-     * Indicates what to do if the output file already exists. By default, the output file will be overwritten,
-     * unless a diffent mode is configured in the 'outputMode' setting for this template in the codegenconfig.json. 
-     * If outputMode has a value, the template configuration will be ignored. 
-     */
-    outputMode?: OutputMode;
-    /**
-     * Provides an optional RegionMarkerFormatter that provides region start- and end markers based on a region name.
-     * Region markers must be used in files that must to be merged with generated code.
-     * If not specified, the default region marker format is used.
-     */
-    regionMarkerFormatter?: RegionMarkerFormatter;
-}
-
-/**
- * Combines the CodeGenerationOptions and CodeModelOptions for the generateFromModel function.
- */
-export interface ModelBasedCodeGenerationOptions<TModel, TTargetModel> extends CodeGenerationOptions, CodeModelOptions<TModel, TTargetModel> {
-
-}
-
-/**
- * The primary interface for code generation using a template. An instance can be 
- * obtained by importing the exported "Generator" constant into the template.
- */
-export interface CodeGenerator {
-    /**
-     * Gets any template arguments that were configured for the template instance in the codegenconfig.json file. 
-     */
-    templateArgs: any | null;
-    /**
-     * Executes the specified code generation template without any model.
-     * @param options The code generation options.
-     * @param template A callback function that writes code to the provided TextWriter.
-     */
-    generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void;
-    /**
-     * Executes the specified code generation template without any model. 
-     * @param options The code generation options.
-     * @param template A callback function that writes code to the provided TextWriter. This callback should
-     * return a Promise<void> when writing has finished.
-     */
-    generateAsync(options: CodeGenerationOptions, template: (writer: TextWriter) => Promise<void>): void;
-    /**
-     * Gets the model that is configured for the current template.
-     * @param options The model options.
-     */
-    getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget>;
-    
-    /**
-     * Builds a model using a custom function. Use this function when you cannot configure a model file
-     * but want to build a model from the template instead.
-     * @param builder A custom function that builds the model.
-     */
-    buildModel<TSource = elements.Model>(builder: () => Promise<TSource>): Promise<TSource>;
-
-    /**
-     * Executes the specified code generation template with the model that is configured for the current template.
-     * @param options The code generation options.
-     */
-    generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => void): void;
-    /**
-     * Executes the specified code generation template with the model that is configured for the current template.
-     * @param options The code generation options.
-     * @param template A callback function that writes code to the provided TextWriter. This callback should
-     * return a Promise<void> when writing has finished. 
-     */
-    generateFromModelAsync<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => Promise<void>): void;
-}
-
-/**
- * Specifies (from inside a template) how to deal with generating files that already exist.
- */
-export enum OutputMode {
-    /**
-     * The output file will be truncated if it exists. This is the default value. 
-     */
-    Overwrite,
-    /**
-     * The output file will not be truncated if it already exists. Use this option if you want 
-     * to update the file manually once it is generated.
-     */
-    Once,
-    /**
-     * The template output will be appended to the file if it already exists. The file is created if it 
-     * does not exist.
-     */
-    Append
-}
+import { CodeGenerator } from './code-generator';
+import { OutputMode, CodeGenerationOptions, ModelBasedCodeGenerationOptions, CodeModelOptions } from './options';
+import { ToHostLogger } from './to-host-logger';
 
 class InternalGenerator implements CodeGenerator {
     public templateArgs!: any | null;
     private outputMode: OutputMode = OutputMode.Overwrite;
     private modelBuilderResult: any | null = null;
     private modelBuilderPromise: Promise<any> | null = null;   
-    // private logger: Logger;
+    private logger: Logger;
 
-    constructor() {
-        //this.templateArgs = InternalGenerator.parseTemplateArgs(process.argv);
+    constructor() {        
         this.parseProcessArgs(process.argv);
         const startedMessage: IProcessMessage = { cmd: 'processStarted' };
         this.sendProcessMessage(startedMessage);
-        // this.logger = new ConsoleLogger(console); // todo: receive log level from the host process
+        this.logger = new ToHostLogger();
     }
 
     private parseProcessArgs(args: string[]): void {
@@ -232,7 +120,7 @@ class InternalGenerator implements CodeGenerator {
             });
     }
 
-    private generateInternal<TModel>(options: CodeGenerationOptions, callback: (writer: TextWriter) => Promise<void>): void {
+    private generateInternal(options: CodeGenerationOptions, callback: (writer: TextWriter) => Promise<void>): void {
         // Get the working directory. The host will make sure that this is the directory in which the template resides.
         const templateDirName = path.resolve('./');
         // console.log('Generator: Template directory name is \'%s\'', templateDirName);
@@ -342,10 +230,11 @@ class InternalGenerator implements CodeGenerator {
         else return Promise.reject('An unexpected internal error has occured.'); // either modelBuilderResult or modelBuilderPromise will have a value, see getModel
     }
 
-    public buildModel<TSource = elements.Model>(builder: () => Promise<TSource>): Promise<TSource> {       
+    public buildModel<TSource = elements.Model>(builder: () => Promise<TSource>): Promise<TSource> {               
         // We need to signal the CLI that we started something async and that is should not kill us.
         // Use the 'generateStarted' / 'generateFinished' commands for now, although we should really use a different command.        
-        this.sendProcessMessage({ cmd: 'generateStarted' });       
+        this.logger.verbose(`Generator.buildModel starting...`);
+        this.sendProcessMessage({ cmd: 'generateStarted' });
 
         // Set up a promise to be returned to the caller, althoug it is optional to use it.
         let resolveFunctionPromise: Function;
@@ -357,10 +246,11 @@ class InternalGenerator implements CodeGenerator {
         });
         this.modelBuilderResult = null;
         this.modelBuilderPromise = builder()
-            .then((result) => {
-                // this.logger.verbose('buildModel: setting modelBuilderResult.');
-                this.modelBuilderResult = result;
-                // this.logger.verbose('buildModel: resolving.');
+            .then((result) => {                
+                this.modelBuilderResult = result;                
+                // var d2 = new Date();
+                // this.logger.verbose(`${d2.getMinutes()}:${d2.getMilliseconds()}: buildModel finished`);
+                this.logger.verbose(`Generator.buildModel finished.`);
                 resolveFunctionPromise(result);
                 // Let the host know that we are 'done'                
                 this.sendProcessMessage({ cmd: 'generateFinished' });
