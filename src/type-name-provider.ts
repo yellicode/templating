@@ -15,6 +15,7 @@ import * as elements from "@yellicode/elements";
  * generating TypeScript code. 
  * This interface is implemented by the DefaultTypeNameProvider, which can be extended to provide 
  * language-specific type names.
+ * @deprecated TypeNameProvider has moved to the 'yellicode/elements' package, please update your references.
  */
 export interface TypeNameProvider {
     /**
@@ -32,8 +33,13 @@ export interface TypeNameProvider {
  * Default implementation of the TypeNameProvider interface. This implementation 
  * returns type names as-is, but allows inheritors to provide their own implementation
  * by overriding getTypeNameForType and/or getTypeNameForTypedElement.
+ * @deprecated DefaultTypeNameProvider has moved to the 'yellicode/elements' package, please update your references.
  */
-export class DefaultTypeNameProvider implements TypeNameProvider {
+export class DefaultTypeNameProvider implements TypeNameProvider {    
+    constructor() {
+        console.warn(`DefaultTypeNameProvider has moved to the '@yellicode/elements' package, please update your references.`);
+    }
+
     /**
      * Returns the name of the provided type.
      * @param type Any model type.
