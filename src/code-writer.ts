@@ -10,11 +10,11 @@ import { TextWriter } from "./text-writer";
 /**
  * The abstract base class for all code writers. This writer implements the TextWriter interface by decorating 
  * the TextWriter provided in the constructor. 
+ * @deprecated CodeWriter has moved to the 'yellicode/core' package, please update your references. 
  */
 export abstract class CodeWriter implements TextWriter {
-    private writer: TextWriter;
-    // private typeNameProvider: TypeNameProvider; // perhaps in the future
-
+    private writer: TextWriter;    
+    
     // NOTE: only documenting the get accessors because the TS compiler we use for doc generation concats the doc 
     // comments for the getter and setter.
 
@@ -46,6 +46,7 @@ export abstract class CodeWriter implements TextWriter {
      * functions on the current CodeGenerator. 
      */
     constructor(writer: TextWriter) {
+        console.warn(`CodeWriter has moved to the '@yellicode/core' package, please update your references.`);
         this.writer = writer;
     }
 

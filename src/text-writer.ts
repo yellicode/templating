@@ -8,6 +8,7 @@
 
 /**
  * Represents a writer that can write a sequential series of characters.
+ * @deprecated TextWriter has moved to the 'yellicode/core' package, please update your references. 
  */
 export interface TextWriter {
     /**

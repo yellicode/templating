@@ -8,6 +8,7 @@
 
 /**
  * Contains helper methods that can be used by custom code writers and templates.
+ * @deprecated CodeWriterUtility has moved to the 'yellicode/core' package, please update your references. 
  */
 export class CodeWriterUtility {
     /**
@@ -17,6 +18,7 @@ export class CodeWriterUtility {
      * @returns A string array containing all lines.
      */
     public static wordWrap(str: string, width: number): string[] {
+        console.warn(`CodeWriterUtility has moved to the '@yellicode/core' package, please update your references.`);
         const result: string[] = [];
 
         if (width < 1 || str == null || str.length <= width)
