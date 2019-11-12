@@ -8,15 +8,17 @@
 export { CodeGenerationOptions, OutputMode } from './options';
 export { Generator } from './internal-generator';
 export { CodeGenerator } from './code-generator';
+export { RegionMarkerFormatter } from "./region-marker-formatter";
+
+// Deprecated, moved to @yellicode/core
 export { CodeWriter } from "./code-writer";
 export { TextWriter } from "./text-writer";
-export { RegionMarkerFormatter } from "./region-marker-formatter";
 export { CodeWriterUtility } from './code-writer-utility';
-export { NameUtility } from './name-utility'; // deprecated, moved to @yellicode/core
-export * from './type-name-provider';
+export { NameUtility } from './name-utility';
 
-// Deprecated, moved to @yellicode/core and @yellicode/elements
+// Deprecated, moved to @yellicode/elements
 export * from "./transforms/model-transform";
 export * from "./transforms/packaged-element-transform";
 export * from "./transforms/package-filter-transform";
 export * from "./transforms/renaming-transforms";
+export * from './type-name-provider';
