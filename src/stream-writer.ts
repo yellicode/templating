@@ -9,14 +9,13 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-import { TextWriter } from './text-writer';
+import { TextWriter } from '@yellicode/core';
 import { RegionMarkerFormatter, DefaultRegionMarkerFormatter } from './region-marker-formatter';
 
 /**
  * Internal writer class that is passed to WriterBase implementations. We don't let people inherit from TextWriter directly because
  * we want to control the instantiation and lifetime of each StreamWriter instance.
  */
-
 export class StreamWriter implements TextWriter {
     private indent: number = 0;
     private templateDirName: string;
@@ -25,10 +24,19 @@ export class StreamWriter implements TextWriter {
 
     public endOfLineString = os.EOL;
     public indentString = "\t";
+    /**
+    * The total number of lines currently written.
+    */
+    public loc: number = 0;
+    /**
+     * The total number of lines currently written, excluding comments and vertical space.
+     */
+    public sloc: number = 0;
+    private countSloc: boolean = true;
 
     /**
      * Constructor. Creates a new StreamWriter that writes to the provided WritableStream.
-     * @param stream A Node.js WritableStream instance. 
+     * @param stream A Node.js WritableStream instance.
      * @param regionMarkerFormatter An optional RegionMarkerFormatter.
      */
     constructor(private stream: NodeJS.WritableStream, regionMarkerFormatter?: RegionMarkerFormatter) {
@@ -36,24 +44,35 @@ export class StreamWriter implements TextWriter {
         this.fileRegionMapper = regionMarkerFormatter == null ? new DefaultRegionMarkerFormatter() : regionMarkerFormatter;
     }
 
+    private incrementLoc(hasContents: boolean) {
+        this.loc++;
+        if (hasContents && this.countSloc) {
+            this.sloc++;
+        }
+    }
+
     /******************************************************************************
      *                          TextWriter implementation
     ******************************************************************************/
     /**
     * Writes a new line to the output. The line is indented automatically. The line is ended with the endOfLineString.
-    * @param value The line to write. When omitted, only the endOfLineString is written.         
-    */    
+    * @param value The line to write. When omitted, only the endOfLineString is written.
+    */
     public writeLine(value?: string): this {
-        if (value){
+        if (value != null) {
             this.stream.write(this.createIndentString() + value + this.endOfLineString);
+            this.incrementLoc(true);
         }
-        else this.stream.write(this.endOfLineString);
+        else {
+            this.stream.write(this.endOfLineString);
+            this.incrementLoc(false);
+        }
         return this;
     };
 
     /**
     * Writes a collection of lines to the output. Each line is indented automatically and ended with the endOfLineString.
-    * @param values The lines to write.   
+    * @param values The lines to write.
     * @param delimiter An optional delimiter to be written at the end of each line, except for the last one.
     */
     public writeLines(values: string[], delimiter?: string): this {
@@ -66,16 +85,18 @@ export class StreamWriter implements TextWriter {
                 this.stream.write(delimiter);
             }
             this.stream.write(this.endOfLineString);
+            this.incrementLoc(value != null);
         });
         return this;
     }
 
     /**
      * Writes a new line to the output while temporarily increasing the indent. The line is ended with the endOfLineString.
-     * @param value The line to write.     
+     * @param value The line to write.
      */
     public writeLineIndented(value: string): this {
         this.stream.write(this.indentString + this.createIndentString() + value + this.endOfLineString);
+        this.incrementLoc(true);
         return this;
     }
 
@@ -84,6 +105,7 @@ export class StreamWriter implements TextWriter {
             this.stream.write(value);
         }
         this.stream.write(this.endOfLineString);
+        this.incrementLoc(true);
         return this;
     }
 
@@ -108,7 +130,7 @@ export class StreamWriter implements TextWriter {
         return this;
     }
 
-    public decreaseIndent() : this{
+    public decreaseIndent(): this {
         if (this.indent > 0) {
             this.indent--;
         }
@@ -140,7 +162,7 @@ export class StreamWriter implements TextWriter {
         if (contents == null || contents.length <= 0)
             return false;
 
-        // First find the region match 
+        // First find the region match
         const regionStartMarker = this.fileRegionMapper.getRegionStartMarker(regionName);
         const regionStartIndex = contents.indexOf(regionStartMarker);
         if (regionStartIndex < 0) {
@@ -157,6 +179,36 @@ export class StreamWriter implements TextWriter {
         this.stream.write(region);
         this.writeEndOfLine();
         return true;
+    }
+
+    /**
+   * Prevents the SLOC (source lines of code) counter from being incremented.
+   */
+    public freezeSloc(): this {
+        this.countSloc = false;
+        return this;
+    }
+
+    /**
+    * Stops preventing the SLOC (source lines of code) counter from being incremented.
+    */
+    public unfreezeSloc(): this {
+        this.countSloc = true;
+        return this;
+    }
+
+    /**
+     * Writes the contained contents without counting the lines as SLOC (source lines of code).
+     * This is similar to calling freezeSloc() -> contents -> unfreezeSloc().
+     * @param contents The code to write without increasing SLOC.
+     */
+    public withFrozenSloc(contents: (writer: this) => void): this {
+        this.countSloc = false;
+        if (contents) {
+            contents(this);
+        }
+        this.countSloc = true;
+        return this;
     }
 
     /******************************************************************************

@@ -18,17 +18,17 @@
     "url": "github:yellicode/templating.git"
   },
   "dependencies": {
-    "@yellicode/core": "^1.2.0",
-    "@yellicode/elements": "^1.2.1"
+    "@yellicode/core": "^1.4.0",
+    "@yellicode/elements": "^1.8.0"
   },
   "devDependencies": {
-    "@types/node": "^10.11.7",
+    "@types/node": "^14.14.22",
     "rollup": "^0.66.6"
   },
   "scripts": {
     "build:es5": "tsc",
     "build:es6": "tsc -m es6 -t es6 --outDir dist/es6 --declaration --declarationDir dist/types",
-    "build:umd": "./node_modules/.bin/rollup --config rollup.config.js",
+    "build:umd": "rollup --config rollup.config.js",
     "build:dist": "npm run build:es5 & npm run build:es6 & npm run build:umd",
     "build": "npm run build:dist",
     "prepare": "npm run build:dist"
