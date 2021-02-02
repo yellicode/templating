@@ -1,6 +1,6 @@
 {
   "name": "@yellicode/templating",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Templating package for Yellicode - an extensible code generator.",
   "keywords": [
     "code generator",
