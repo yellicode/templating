@@ -7,16 +7,16 @@
  */
 
 import * as elements from '@yellicode/elements';
+import { TextWriter } from '@yellicode/core';
 import { CodeGenerationOptions, CodeModelOptions, ModelBasedCodeGenerationOptions } from './options';
-import { TextWriter } from './text-writer';
 
 /**
- * The primary interface for code generation using a template. An instance can be 
+ * The primary interface for code generation using a template. An instance can be
  * obtained by importing the exported "Generator" constant into the template.
  */
 export interface CodeGenerator {
     /**
-     * Gets any template arguments that were configured for the template instance in the codegenconfig.json file. 
+     * Gets any template arguments that were configured for the template instance in the codegenconfig.json file.
      */
     templateArgs: any | null;
     /**
@@ -26,7 +26,7 @@ export interface CodeGenerator {
      */
     generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void;
     /**
-     * Executes the specified code generation template without any model. 
+     * Executes the specified code generation template without any model.
      * @param options The code generation options.
      * @param template A callback function that writes code to the provided TextWriter. This callback should
      * return a Promise<void> when writing has finished.
@@ -37,7 +37,7 @@ export interface CodeGenerator {
      * @param options The model options.
      */
     getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget>;
-    
+
     /**
      * Builds a model using a custom function. Use this function when you cannot configure a model file
      * but want to build a model from the template instead.
@@ -54,7 +54,7 @@ export interface CodeGenerator {
      * Executes the specified code generation template with the model that is configured for the current template.
      * @param options The code generation options.
      * @param template A callback function that writes code to the provided TextWriter. This callback should
-     * return a Promise<void> when writing has finished. 
+     * return a Promise<void> when writing has finished.
      */
     generateFromModelAsync<TSourceModel = elements.Model, TTargetModel = TSourceModel>(options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>, template: (writer: TextWriter, model: TTargetModel) => Promise<void>): void;
 }

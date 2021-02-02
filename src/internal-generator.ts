@@ -9,10 +9,10 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { IProcessMessage, ISetModelMessage, Logger } from '@yellicode/core';
+import { TextWriter } from '@yellicode/core';
 import { ModelReader } from '@yellicode/elements';
 import * as elements from '@yellicode/elements';
 import { StreamWriter } from './stream-writer';
-import { TextWriter } from './text-writer';
 import { FileSystemUtility } from './file-system-utility';
 import { CodeGenerator } from './code-generator';
 import { OutputMode, CodeGenerationOptions, ModelBasedCodeGenerationOptions, CodeModelOptions } from './options';
@@ -22,10 +22,10 @@ class InternalGenerator implements CodeGenerator {
     public templateArgs!: any | null;
     private outputMode: OutputMode = OutputMode.Overwrite;
     private modelBuilderResult: any | null = null;
-    private modelBuilderPromise: Promise<any> | null = null;   
+    private modelBuilderPromise: Promise<any> | null = null;
     private logger: Logger;
 
-    constructor() {        
+    constructor() {
         this.parseProcessArgs(process.argv);
         const startedMessage: IProcessMessage = { cmd: 'processStarted' };
         this.sendProcessMessage(startedMessage);
@@ -58,7 +58,7 @@ class InternalGenerator implements CodeGenerator {
                 return OutputMode.Overwrite;
             default:
                 return null;
-        }       
+        }
     }
 
     private static parseTemplateArgs(args: string[], index: number): any | null {
@@ -74,10 +74,10 @@ class InternalGenerator implements CodeGenerator {
     }
 
     private sendProcessMessage(message: IProcessMessage) {
-        (process as any).send(message); // https://github.com/Microsoft/TypeScript/issues/10158        
+        (process as any).send(message); // https://github.com/Microsoft/TypeScript/issues/10158
     }
 
-    public generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void {        
+    public generate(options: CodeGenerationOptions, template: (writer: TextWriter) => void): void {
         this.generateInternal(options, (writer: TextWriter) => {
             template(writer);
             return Promise.resolve();
@@ -89,7 +89,7 @@ class InternalGenerator implements CodeGenerator {
     }
 
     /**
-     * Executes the provided template using the model that was configured in the code generation configuration. 
+     * Executes the provided template using the model that was configured in the code generation configuration.
      */
     public generateFromModel<TSourceModel = elements.Model, TTargetModel = TSourceModel>(
         options: ModelBasedCodeGenerationOptions<TSourceModel, TTargetModel>,
@@ -125,14 +125,14 @@ class InternalGenerator implements CodeGenerator {
         const templateDirName = path.resolve('./');
         // console.log('Generator: Template directory name is \'%s\'', templateDirName);
         const fullOutputFileName = path.join(templateDirName, options.outputFile);
-        // Ensure that the directory exists        
+        // Ensure that the directory exists
         FileSystemUtility.ensureDirectory(path.dirname(fullOutputFileName));
 
         // Let the host know that we started something so that we don't get killed
         var startedMessage: IProcessMessage = { cmd: 'generateStarted' };
-        this.sendProcessMessage(startedMessage);        
+        this.sendProcessMessage(startedMessage);
         // console.log('Generator: Generating file \'%s\'...', fullOutputFileName);
-        const mode = options.outputMode === undefined ? this.outputMode : options.outputMode;       
+        const mode = options.outputMode === undefined ? this.outputMode : options.outputMode;
         if (mode === OutputMode.Once && fs.existsSync(fullOutputFileName)) {
             // Don't regenerate the file
             var finishedMessage: IProcessMessage = { cmd: 'generateFinished' };
@@ -156,7 +156,7 @@ class InternalGenerator implements CodeGenerator {
     }
 
     /**
-    * Loads the model that was configured in the code generation configuration. 
+    * Loads the model that was configured in the code generation configuration.
     */
     public getModel<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
         const codeModelOptions = options || {};
@@ -177,7 +177,7 @@ class InternalGenerator implements CodeGenerator {
                 }
 
                 let model: TSource | null;
-                // Should we parse the model into a Yellicode model?                                
+                // Should we parse the model into a Yellicode model?
                 if (parseJson && ModelReader.canRead(m.modelData)) {
                     // The modelData will contain a Yellicode document with two main nodes: a 'model' node and an optional 'profiles' node.
                     // We need to parse the entire document (because profiles must be applied) and then return
@@ -190,7 +190,7 @@ class InternalGenerator implements CodeGenerator {
                 }
                 else model = m.modelData; // return plain JSON
 
-                // Apply transforms                
+                // Apply transforms
                 let targetModel: TTarget;
                 if (model && codeModelOptions.modelTransform) {
                     targetModel = codeModelOptions.modelTransform.transform(model);
@@ -206,16 +206,16 @@ class InternalGenerator implements CodeGenerator {
         return promise;
     }
 
-    private getModelFromModelBuilder<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {        
+    private getModelFromModelBuilder<TSource = elements.Model, TTarget = TSource>(options?: CodeModelOptions<TSource, TTarget>): Promise<TTarget> {
         const codeModelOptions = options || {};
-        const applyTransform = (model: TSource): TTarget => {            
+        const applyTransform = (model: TSource): TTarget => {
             if (model && codeModelOptions.modelTransform) {
                 return codeModelOptions.modelTransform.transform(model);
             }
             return <any>model as TTarget;
         };
         if (this.modelBuilderResult) {
-            // this.logger.verbose('getModelFromModelBuilder: returning current modelBuilderResult.');            
+            // this.logger.verbose('getModelFromModelBuilder: returning current modelBuilderResult.');
             return Promise.resolve(applyTransform(this.modelBuilderResult));
         }
         else if (this.modelBuilderPromise) {
@@ -230,15 +230,15 @@ class InternalGenerator implements CodeGenerator {
         else return Promise.reject('An unexpected internal error has occured.'); // either modelBuilderResult or modelBuilderPromise will have a value, see getModel
     }
 
-    public buildModel<TSource = elements.Model>(builder: () => Promise<TSource>): Promise<TSource> {               
+    public buildModel<TSource = elements.Model>(builder: () => Promise<TSource>): Promise<TSource> {
         // We need to signal the CLI that we started something async and that is should not kill us.
-        // Use the 'generateStarted' / 'generateFinished' commands for now, although we should really use a different command.        
+        // Use the 'generateStarted' / 'generateFinished' commands for now, although we should really use a different command.
         this.logger.verbose(`Generator.buildModel starting...`);
         this.sendProcessMessage({ cmd: 'generateStarted' });
 
         // Set up a promise to be returned to the caller, althoug it is optional to use it.
         let resolveFunctionPromise: Function;
-        let rejectFunctionPromise: Function;  
+        let rejectFunctionPromise: Function;
         const functionPromise = new Promise<TSource>((resolve, reject) => {
             // resolve when builder resolves
             resolveFunctionPromise = resolve;
@@ -246,19 +246,19 @@ class InternalGenerator implements CodeGenerator {
         });
         this.modelBuilderResult = null;
         this.modelBuilderPromise = builder()
-            .then((result) => {                
-                this.modelBuilderResult = result;                
+            .then((result) => {
+                this.modelBuilderResult = result;
                 // var d2 = new Date();
                 // this.logger.verbose(`${d2.getMinutes()}:${d2.getMilliseconds()}: buildModel finished`);
                 this.logger.verbose(`Generator.buildModel finished.`);
                 resolveFunctionPromise(result);
-                // Let the host know that we are 'done'                
+                // Let the host know that we are 'done'
                 this.sendProcessMessage({ cmd: 'generateFinished' });
                 return result;
             })
             .catch((e) => rejectFunctionPromise(e));
 
-        return functionPromise;     
+        return functionPromise;
     }
 }
 
