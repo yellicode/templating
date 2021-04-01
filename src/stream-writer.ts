@@ -33,6 +33,8 @@ export class StreamWriter implements TextWriter {
      */
     public sloc: number = 0;
     private countSloc: boolean = true;
+    private noIndent: boolean = false;
+    private noEndOfLine: boolean = false;
 
     /**
      * Constructor. Creates a new StreamWriter that writes to the provided WritableStream.
@@ -60,11 +62,17 @@ export class StreamWriter implements TextWriter {
     */
     public writeLine(value?: string): this {
         if (value != null) {
-            this.stream.write(this.createIndentString() + value + this.endOfLineString);
+            if (this.noEndOfLine)
+                this.stream.write(this.createIndentString() + value);
+            else
+                this.stream.write(this.createIndentString() + value + this.endOfLineString);
+
             this.incrementLoc(true);
         }
         else {
-            this.stream.write(this.endOfLineString);
+            if (!this.noEndOfLine)
+                this.stream.write(this.endOfLineString);
+
             this.incrementLoc(false);
         }
         return this;
@@ -84,7 +92,9 @@ export class StreamWriter implements TextWriter {
             if (delimiter && index < len - 1) {
                 this.stream.write(delimiter);
             }
-            this.stream.write(this.endOfLineString);
+            if (!this.noEndOfLine) {
+                this.stream.write(this.endOfLineString);
+            }
             this.incrementLoc(value != null);
         });
         return this;
@@ -95,7 +105,16 @@ export class StreamWriter implements TextWriter {
      * @param value The line to write.
      */
     public writeLineIndented(value: string): this {
-        this.stream.write(this.indentString + this.createIndentString() + value + this.endOfLineString);
+        const indentString = this.noIndent ? ''
+            : this.indentString + this.createIndentString();
+
+        if (this.noEndOfLine) {
+            this.stream.write(indentString + value);
+        }
+        else {
+            this.stream.write(indentString + value + this.endOfLineString);
+        }
+
         this.incrementLoc(true);
         return this;
     }
@@ -104,13 +123,18 @@ export class StreamWriter implements TextWriter {
         if (value) {
             this.stream.write(value);
         }
-        this.stream.write(this.endOfLineString);
+        if (!this.noEndOfLine)  {
+            this.stream.write(this.endOfLineString);
+        }
+
         this.incrementLoc(true);
         return this;
     }
 
     public writeIndent(): this {
-        this.stream.write(this.createIndentString());
+        if (!this.noIndent) {
+            this.stream.write(this.createIndentString());
+        }
         return this;
     };
 
@@ -139,6 +163,40 @@ export class StreamWriter implements TextWriter {
 
     public clearIndent(): this {
         this.indent = 0;
+        return this;
+    }
+
+    /**
+    * Disables writing any indentation for following writeIndent() and writeLine() calls, until
+    * resumeIndent() is called.
+    */
+    public suppressIndent(): this {
+        this.noIndent = true;
+        return this;
+    }
+
+    /**
+     * Resumes writing indentation after a call to suppressIndent().
+     */
+    public resumeIndent(): this {
+        this.noIndent = false;
+        return this;
+    }
+
+    /**
+     * Disables writing any end of line character for following and writeLine() calls, until
+     * resumeEndOfLine() is called.
+     */
+    public suppressEndOfLine(): this {
+        this.noEndOfLine = true;
+        return this;
+    }
+
+    /**
+    * Resumes writing end of line characters after a call to suppressEndOfLine().
+    */
+    public resumeEndOfLine(): this {
+        this.noEndOfLine = false;
         return this;
     }
 
@@ -216,6 +274,9 @@ export class StreamWriter implements TextWriter {
     ******************************************************************************/
     private createIndentString(): string {
         var result: string = "";
+        if (this.noIndent)
+            return result;
+
         for (let i = 0; i < this.indent; i++) {
             result += this.indentString;
         }
